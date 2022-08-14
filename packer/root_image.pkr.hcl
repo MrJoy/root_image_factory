@@ -80,6 +80,18 @@ variable "use_generated_security_group" {
   default     = false
 }
 
+variable "external_id" {
+  type        = string
+  description = "The ExternalId value to use when assuming a role in the admin/meta account."
+  default     = env("ROLE_EXTERNAL_ID")
+
+  # Use this if you're having issues with credentials!
+  # validation {
+  #   condition     = length(var.external_id) == 40
+  #   error_message = "Specify ROLE_EXTERNAL_ID environment variable, with appropriate value."
+  # }
+}
+
 data "amazon-parameterstore" "account_info" {
   region = var.region
 
@@ -152,12 +164,12 @@ locals {
 source "amazon-ebssurrogate" "debian" {
   assume_role {
     role_arn = data.amazon-parameterstore.role_arn.value
+    external_id = var.external_id
   }
 
   subnet_filter {
     filters = {
-      "tag:Application" : "Packer"
-      "tag:Service" : "Build"
+      "tag:Type" : "Public"
     }
 
     random = true
@@ -247,12 +259,12 @@ source "amazon-ebs" "debian" {
 
   assume_role {
     role_arn = data.amazon-parameterstore.role_arn.value
+    external_id = var.external_id
   }
 
   subnet_filter {
     filters = {
-      "tag:Application" : "Packer"
-      "tag:Service" : "Build"
+      "tag:Type" : "Public"
     }
 
     random = true
