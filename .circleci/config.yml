@@ -32,14 +32,14 @@ workflows:
           filters:
             branches:
               only:
-                - develop
-          version: 1.1.7
-          name: "Plan (Development)"
+                - stage
+          version: 1.2.1
+          name: "Plan (Stage)"
           path: "terraform"
-          workspace: "development-ci-cd"
+          workspace: "stage-ci-cd"
           continuation: true
           var: "region=<< pipeline.parameters.region >>"
-          continuation_parameters: "region=<< pipeline.parameters.region >>,build_account_slug=development-ci-cd"
+          continuation_parameters: "region=<< pipeline.parameters.region >>,build_account_slug=stage-ci-cd"
           context: AWS-Write
           before_continuation_steps:
             - run:
@@ -53,6 +53,6 @@ workflows:
             branches:
               only:
                 - main
-          name: "Plan (Production)"
-          workspace: "production-ci-cd"
-          continuation_parameters: "region=<< pipeline.parameters.region >>,build_account_slug=production-ci-cd"
+          name: "Plan (Prod)"
+          workspace: "prod-ci-cd"
+          continuation_parameters: "region=<< pipeline.parameters.region >>,build_account_slug=prod-ci-cd"

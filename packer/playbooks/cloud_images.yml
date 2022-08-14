@@ -16,7 +16,7 @@
 - hosts: all
 
   vars:
-    build_environment: production
+    build_environment: prod
 
   pre_tasks:
     - include_vars: "{{ item }}"
