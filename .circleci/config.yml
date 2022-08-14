@@ -16,43 +16,56 @@ version: 2.1
 
 setup: true
 
+orbs:
+  teak: teak/sdk-utils@0.8
+
 parameters:
   region:
     type: string
     default: us-east-1
+  # Work around CircleCI brain damage.
+  # It is an error for a continuation to _not_ change a pipeline parameter. We drop the in_ prefix
+  # from these parameters in continue.yml, so that Circle sees changes.
+  in_build_account_slug:
+    type: string
+    default: ''
+  in_deploy_account_slug:
+    type: string
+    default: ''
 
-orbs:
-  teak: teak/sdk-utils@0.5
+references:
+  ONLY_STAGE: &ONLY_STAGE
+    filters:
+      branches:
+        only:
+          - stage
+  ONLY_MAIN: &ONLY_MAIN
+    filters:
+      branches:
+        only:
+          - main
+
+jobs:
+  setup:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - teak/packer-install:
+          version: 1.7.5-dev2
+          github_releases_user: AlexSc
+          gpg_key_id: EC3A3F7C6C4F9D25
 
 workflows:
   version: 2
-  terraform-plan:
+  full:
     jobs:
-      - teak/terraform-plan: &terraform-plan
-          filters:
-            branches:
-              only:
-                - stage
-          version: 1.2.1
-          name: "Plan (Stage)"
-          path: "terraform"
-          workspace: "stage-ci-cd"
-          continuation: true
-          var: "region=<< pipeline.parameters.region >>"
-          continuation_parameters: "region=<< pipeline.parameters.region >>,build_account_slug=stage-ci-cd"
-          context: AWS-Write
-          before_continuation_steps:
-            - run:
-                name: "Add our pipeline parameters to continuation"
-                command: |
-                  tmp=$(mktemp)
-                  cat continue_params.json | jq --arg region '<< pipeline.parameters.region >>' '. + {region: $region}' > "$tmp" && mv "$tmp" continue_params.json
-      - teak/terraform-plan:
-          <<: *terraform-plan
-          filters:
-            branches:
-              only:
-                - main
-          name: "Plan (Prod)"
-          workspace: "prod-ci-cd"
-          continuation_parameters: "region=<< pipeline.parameters.region >>,build_account_slug=prod-ci-cd"
+      - teak/ami-update-continuation:
+          <<: *ONLY_STAGE
+          region: << pipeline.parameters.region >>
+          deploy_account_slug: stage-workload
+          build_account_slug: stage-ci-cd
+      - teak/ami-update-continuation:
+          <<: *ONLY_MAIN
+          region: << pipeline.parameters.region >>
+          deploy_account_slug: prod-workload
+          build_account_slug: prod-ci-cd
