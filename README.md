@@ -42,7 +42,7 @@ Then run `aws-vault exec mrjoy -- terraform plan -var-file=<workspace>.tfvars -o
 After running terraform, change to the packer directory and run
 
 ```bash
-aws-vault exec mrjoy -- ~/bin/packer_1.7.5-dev3_darwin_arm64 build --var-file=root_image.auto.pkrvars.hcl --var-file=../secrets.auto.pkrvars.hcl -var build_account_canonical_slug=stage-ci-cd -timestamp-ui -except "vagrant.*" root_image.pkr.hcl
+aws-vault exec mrjoy -- ~/bin/packer_1.7.5-dev3_darwin_arm64 build --var-file=root_image.auto.pkrvars.hcl --var-file=../secrets.auto.pkrvars.hcl -var build_account_canonical_slug=stage-ci-cd -var use_generated_security_group=true -timestamp-ui root_image.pkr.hcl
 ```
 
-to build root Debian 11 AMIs and Vagrant boxes.
+to build root Debian 11 AMIs.
