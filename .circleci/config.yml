@@ -17,7 +17,7 @@ version: 2.1
 setup: true
 
 orbs:
-  teak: teak/sdk-utils@0.8
+  teak: teak/sdk-utils@0.9
 
 parameters:
   region:
