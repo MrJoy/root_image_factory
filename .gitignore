@@ -2,3 +2,4 @@
 packer/manifests
 packer/raw_manifests
 *.tfplan
+secrets.auto.pkrvars.hcl
